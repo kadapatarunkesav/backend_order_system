@@ -4,9 +4,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import static org.springframework.data.domain.Sort.by;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backendordersystem.order_service.DTO.OrderItemResponse;
+import com.backendordersystem.order_service.DTO.OrderPageableResponse;
 import com.backendordersystem.order_service.DTO.OrderRequest;
 import com.backendordersystem.order_service.DTO.OrderResponse;
 import com.backendordersystem.order_service.Entity.Order;
@@ -29,7 +35,7 @@ public class OrderServices {
                 .mapToLong(item -> item.price() * item.qty())
                 .sum();
 
-        Order newOrder =new Order();
+        Order newOrder = new Order();
         newOrder.setOrderId(UUID.randomUUID());
         newOrder.setUserId(UUID.randomUUID());
         newOrder.setStatus("CREATED");
@@ -37,8 +43,7 @@ public class OrderServices {
         newOrder.setCreatedAt(Instant.now());
         newOrder.setUpdatedAt(Instant.now());
 
-
-        List<OrderItem> items = orderRequest.items().stream().map(i -> {
+        List<OrderItem> orderItems = orderRequest.items().stream().map(i -> {
             OrderItem item = new OrderItem();
             item.setOrder(newOrder);
             item.setSku(i.sku());
@@ -47,17 +52,73 @@ public class OrderServices {
             return item;
         }).toList();
 
-
-        newOrder.setItems(items);
+        newOrder.setItems(orderItems);
 
         Order saved = orderRepo.save(newOrder);
 
-        OrderResponse response= new OrderResponse(
-            saved.getOrderId(),
-            saved.getStatus(),
-            saved.getTotalAmount());
+        OrderResponse response = new OrderResponse(
+                saved.getOrderId(),
+                saved.getStatus(),
+                saved.getTotalAmount());
 
         return response;
+    }
+
+    public List<OrderItemResponse> getOrderDetailsById(UUID orderId, String idempotencyKey) {
+
+        Order getOrder = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<OrderItemResponse> itemResponses = getOrder.getItems()
+                .stream()
+                .map(i -> new OrderItemResponse(
+                        i.getSku(),
+                        i.getQty(),
+                        i.getPrice()))
+                .toList();
+
+        return itemResponses;
+    }
+
+    public Page<OrderPageableResponse> getOrdersByUser(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, by("createdAt").descending());
+
+        Page<Order> orders = orderRepo.findByUserId(userId, pageable);
+
+        return orders.map(order -> new OrderPageableResponse(
+                order.getOrderId(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                order.getItems().stream()
+                        .map(i -> new OrderItemResponse(i.getSku(), i.getQty(), i.getPrice()))
+                        .toList()));
+    }
+
+
+    // used pageable response DTO for viewing purpose --
+    // Mulitple use of one DTO Obj
+
+    public OrderPageableResponse cancelOrder(UUID orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getStatus().equals("CREATED")) {
+            throw new RuntimeException("Only CREATED orders can be cancelled ");
+        }
+
+        order.setStatus("CANCELLED");
+        orderRepo.save(order);
+
+        List<OrderItemResponse> items = order.getItems()
+                .stream()
+                .map(i -> new OrderItemResponse(i.getSku(), i.getQty(), i.getPrice()))
+                .toList();
+
+        return new OrderPageableResponse(
+                order.getOrderId(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                items);
     }
 
 }

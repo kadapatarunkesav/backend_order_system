@@ -17,13 +17,13 @@ import lombok.Data;
 @Table(name = "outbox")
 public class OutboxEvent {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
     private String aggregateType;
     private UUID  aggregateId;
     private String eventType;
 
     
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "json")
     private String payload;
     private boolean published = false;
     private Instant createdAt;

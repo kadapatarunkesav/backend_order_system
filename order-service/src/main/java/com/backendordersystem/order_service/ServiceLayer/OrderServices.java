@@ -2,6 +2,7 @@ package com.backendordersystem.order_service.ServiceLayer;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +18,11 @@ import com.backendordersystem.order_service.DTO.OrderRequest;
 import com.backendordersystem.order_service.DTO.OrderResponse;
 import com.backendordersystem.order_service.Entity.Order;
 import com.backendordersystem.order_service.Entity.OrderItem;
+import com.backendordersystem.order_service.Entity.OutBoxEvent;
 import com.backendordersystem.order_service.Repository.OrderRepo;
+import com.backendordersystem.order_service.Repository.OutBoxRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 
@@ -26,6 +31,8 @@ import lombok.AllArgsConstructor;
 public class OrderServices {
 
     private final OrderRepo orderRepo;
+    private final ObjectMapper objectMapper;
+    private final OutBoxRepo outBoxRepo;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest orderRequest, String idempotencyKey) {
@@ -54,6 +61,27 @@ public class OrderServices {
 
         newOrder.setItems(orderItems);
 
+
+        Map<String, Object> payload = Map.of(
+                "orderId", newOrder.getOrderId(),
+                "userId", newOrder.getUserId(),
+                "items", newOrder.getItems(),
+                "totalAmount", newOrder.getTotalAmount(),
+                "status", newOrder.getStatus()
+        );
+
+        String jsonPayload;
+        try {
+            jsonPayload = objectMapper.writeValueAsString(payload);
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to serialize event", ex);
+        }
+
+        OutBoxEvent event = new OutBoxEvent();
+        event.setAggregateId(newOrder.getOrderId());
+        event.setType("ORDER_CREATED");
+        event.setPayload(jsonPayload);
+        outBoxRepo.save(event);
         Order saved = orderRepo.save(newOrder);
 
         OrderResponse response = new OrderResponse(
@@ -98,7 +126,8 @@ public class OrderServices {
     // used pageable response DTO for viewing purpose --
     // Mulitple use of one DTO Obj
 
-    public OrderPageableResponse cancelOrder(UUID orderId) {
+    @Transactional
+    public OrderPageableResponse cancelOrder(UUID orderId) throws JsonProcessingException {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -108,6 +137,17 @@ public class OrderServices {
 
         order.setStatus("CANCELLED");
         orderRepo.save(order);
+
+        String payload = objectMapper.writeValueAsString(
+        Map.of("orderId", orderId, "status", order.getStatus())
+    );
+
+    OutBoxEvent event = new OutBoxEvent();
+    event.setAggregateId(orderId);
+    event.setType("ORDER_CANCELLED");
+    event.setPayload(payload);
+
+    outBoxRepo.save(event);
 
         List<OrderItemResponse> items = order.getItems()
                 .stream()

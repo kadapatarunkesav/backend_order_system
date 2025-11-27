@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 public class IdempotencyKey {
 
     @Id
+    @Column(name = "key_id", length = 255)
     private String key;
 
     @Column(nullable = false)

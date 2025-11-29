@@ -21,6 +21,7 @@ import com.backendordersystem.order_service.DTO.OrderPageableResponse;
 import com.backendordersystem.order_service.DTO.OrderRequest;
 import com.backendordersystem.order_service.DTO.OrderResponse;
 import com.backendordersystem.order_service.ServiceLayer.OrderServices;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.AllArgsConstructor;
 
@@ -64,7 +65,7 @@ public class OrderController {
     }
 
     @PatchMapping("/cancleOrderById/{orderId}")
-    public ResponseEntity<OrderPageableResponse> cancelOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<OrderPageableResponse> cancelOrder(@PathVariable UUID orderId) throws JsonProcessingException {
 
         OrderPageableResponse response = orderServices.cancelOrder(orderId);
 

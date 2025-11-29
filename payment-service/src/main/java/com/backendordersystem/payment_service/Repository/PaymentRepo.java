@@ -10,4 +10,6 @@ import com.backendordersystem.payment_service.Entity.Payment;
 public interface PaymentRepo extends  JpaRepository<Payment, UUID> {
 
     Optional<Payment> findByOrderId(UUID orderId);
+
+    boolean existsByOrderId(UUID orderId);
 }

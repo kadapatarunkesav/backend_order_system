@@ -2,6 +2,8 @@ spring:
   application:
     name: order-service
   kafka:
+    admin:
+      auto-create: true
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

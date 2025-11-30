@@ -18,6 +18,7 @@ public class PaymentService {
 
         OrderPayload orderPayload = event.payload();
         if (paymentRepo.existsByOrderId(orderPayload.orderId())) {
+            System.out.println(orderPayload);
         }
     }
 

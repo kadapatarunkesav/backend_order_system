@@ -61,11 +61,20 @@ public class OrderServices {
 
         newOrder.setItems(orderItems);
 
+        // serilization error caused due to direct mapping of get items
 
+        List itemPayload = newOrder.getItems().stream()
+        .map(i -> Map.of(
+                "sku", i.getSku(),
+                "qty", i.getQty(),
+                "price", i.getPrice()
+        ))
+        .toList();
+        
         Map<String, Object> payload = Map.of(
                 "orderId", newOrder.getOrderId(),
                 "userId", newOrder.getUserId(),
-                "items", newOrder.getItems(),
+                "items", itemPayload,
                 "totalAmount", newOrder.getTotalAmount(),
                 "status", newOrder.getStatus()
         );

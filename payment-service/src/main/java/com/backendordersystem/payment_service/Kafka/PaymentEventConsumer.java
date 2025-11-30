@@ -24,12 +24,11 @@ public class PaymentEventConsumer {
         try {
             JsonNode root = objectMapper.readTree(message);
 
-            String eventType = root.get("eventType").asText();
+            String eventType = root.get("status").asText();
 
-            if (eventType.equals("ORDER_CREATED")) {
+            if (eventType.equals("CREATED")) {
                 OrderCreatedEvent event =
-                        objectMapper.treeToValue(root.get("data"), OrderCreatedEvent.class);
-
+                objectMapper.treeToValue(root.get("data"), OrderCreatedEvent.class);
                 paymentService.processPayment(event);
             }
 

@@ -1,8 +1,10 @@
 package com.backendordersystem.order_service.Kafka;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,7 @@ import lombok.AllArgsConstructor;
 
 @Component
 @AllArgsConstructor
+@EnableScheduling
 public class OutboxPublisherScheduler {
 
     private final OutBoxRepo outBoxRepo;
@@ -29,6 +32,7 @@ public class OutboxPublisherScheduler {
 
                         if (ex == null) {
                             event.setPublished(true);
+                            event.setPublishedAt(Instant.now());
                             outBoxRepo.save(event);
                         }
                     });

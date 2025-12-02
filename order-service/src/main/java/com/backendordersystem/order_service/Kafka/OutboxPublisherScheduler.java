@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import com.backendordersystem.order_service.Entity.OutBoxEvent;
 import com.backendordersystem.order_service.Repository.OutBoxRepo;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 
@@ -19,15 +21,18 @@ import lombok.AllArgsConstructor;
 public class OutboxPublisherScheduler {
 
     private final OutBoxRepo outBoxRepo;
+    private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Scheduled(fixedDelay = 1000)
-    public void publishEvents() {
+    public void publishEvents() throws Exception{
 
         List<OutBoxEvent> events = outBoxRepo.findTop20ByPublishedFalseOrderByCreatedAtAsc();
-
         for (OutBoxEvent event : events) {
-            kafkaTemplate.send("order.events", event.getAggregateId().toString(), event.getPayload())
+
+            String json = objectMapper.writeValueAsString(event);
+
+            kafkaTemplate.send("order.events", event.getAggregateId().toString(), json)
                     .whenComplete((result, ex) -> {
 
                         if (ex == null) {

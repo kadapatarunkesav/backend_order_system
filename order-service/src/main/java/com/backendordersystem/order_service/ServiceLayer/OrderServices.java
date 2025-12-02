@@ -88,6 +88,7 @@ public class OrderServices {
 
         OutBoxEvent event = new OutBoxEvent();
         event.setAggregateId(newOrder.getOrderId());
+        event.setAggregateType("ORDER");
         event.setType("ORDER_CREATED");
         event.setPayload(jsonPayload);
         outBoxRepo.save(event);

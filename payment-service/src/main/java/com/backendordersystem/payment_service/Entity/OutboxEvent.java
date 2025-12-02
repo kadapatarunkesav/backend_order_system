@@ -6,7 +6,6 @@ import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -16,20 +15,34 @@ import lombok.Data;
 @Data
 @Table(name = "outbox")
 public class OutboxEvent {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
+    @Id
+    @GeneratedValue
     private UUID id;
+
+    // added for identity of order
     private String aggregateType;
     private UUID  aggregateId;
-    private String eventType;
 
-    
-    @Column(columnDefinition = "json")
+    @Column(nullable = false, columnDefinition = "json")
     private String payload;
-    private boolean published = false;
-    private Instant createdAt;
-    private Instant publishedAt;
-    @PrePersist
-    public void onCreate(){ createdAt = Instant.now(); }
 
+    @Column(nullable = false)
+    private String type;
+
+    @Column(nullable = false)
+    private boolean published;
+
+    @Column(nullable = false)
+    private Instant createdAt;
+
+    private Instant publishedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (id == null) id = UUID.randomUUID();
+        if (createdAt == null) createdAt = Instant.now();
+        published = false;
+    }
 }
 

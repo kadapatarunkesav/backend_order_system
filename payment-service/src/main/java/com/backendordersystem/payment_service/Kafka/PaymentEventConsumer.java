@@ -3,10 +3,8 @@ package com.backendordersystem.payment_service.Kafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.backendordersystem.payment_service.DTO.OrderPayload;
 import com.backendordersystem.payment_service.Entity.OutboxEvent;
 import com.backendordersystem.payment_service.Service.PaymentService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;

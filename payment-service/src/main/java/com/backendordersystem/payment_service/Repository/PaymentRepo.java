@@ -1,5 +1,6 @@
 package com.backendordersystem.payment_service.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,10 @@ public interface PaymentRepo extends  JpaRepository<Payment, UUID> {
     Optional<Payment> findByOrderId(UUID orderId);
 
     boolean existsByOrderId(UUID orderId);
+
+    List<Payment> findTop20ByStatusOrderByCreatedAtAsc(String string);
+
+    Payment findByPaymentId(UUID orderId);
+
+
 }

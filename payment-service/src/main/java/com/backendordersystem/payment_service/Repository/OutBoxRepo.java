@@ -9,6 +9,6 @@ import com.backendordersystem.payment_service.Entity.OutboxEvent;
 
 public interface OutBoxRepo extends JpaRepository<OutboxEvent,UUID>{
 
-    List<OutboxEvent> findTop20ByPublishedFalseOrderByCreatedAtAsc();
+    List<OutboxEvent> findTop20ByPublishedFalseAndTypeOrderByCreatedAtAsc(String type);
 
 }

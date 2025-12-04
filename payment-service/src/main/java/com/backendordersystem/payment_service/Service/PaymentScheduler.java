@@ -28,7 +28,7 @@ public class PaymentScheduler {
         List<Payment> pendingPayList = paymentRepo.findTop20ByStatusOrderByCreatedAtAsc("PENDING");
 
         for (Payment payee : pendingPayList) {
-            if (payee.getCreatedAt().plusSeconds(300).isBefore(Instant.now())) {
+            if (payee.getCreatedAt().plusSeconds(30).isBefore(Instant.now())) {
 
                 payee.setStatus("FAILED");
                 payee.setUpdatedAt(Instant.now());

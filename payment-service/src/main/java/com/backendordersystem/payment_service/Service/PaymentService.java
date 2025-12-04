@@ -38,17 +38,32 @@ public class PaymentService {
     public void outBoxFailedPayment(Payment payment) {
         OutboxEvent  outboxEvent = new OutboxEvent();
         outboxEvent.setAggregateId(payment.getOrderId());
-        outboxEvent.setPayload("{\n" +"}");
+        outboxEvent.setPayload("""
+                               {
+                               }""");
         outboxEvent.setType("PAYMENT_FAILED");
-        outboxEvent.setAggregateType("PAYMENT");
+        outboxEvent.setAggregateType("NONE");
+
+        payment.setStatus("FAILED");
         
         outBoxRepo.save(outboxEvent);
     }    
 
-    public void paymentTransaction(UUID orderId , Long amount) throws Exception{
+    public void paymentTransaction(UUID orderId , Long amount,String paymentMode) throws Exception{
         Payment payment = paymentRepo.findByOrderId(orderId).orElseThrow();
         if(amount.equals(payment.getAmount()) && payment.getStatus().equals("PENDING"))
             payment.setStatus("CONFIRMED");
+        OutboxEvent  outboxEvent = new OutboxEvent();
+        outboxEvent.setAggregateId(orderId);
+        outboxEvent.setPayload("""
+                               {
+                               }""");
+        outboxEvent.setType("PAYMENT_SUCCESS");
+        outboxEvent.setAggregateType(paymentMode);
+
+        payment.setStatus("SUCCESS");
+        
+        outBoxRepo.save(outboxEvent);
         paymentRepo.save(payment);
     }
 }

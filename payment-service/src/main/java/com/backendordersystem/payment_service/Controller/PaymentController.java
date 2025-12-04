@@ -20,11 +20,11 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/payment/{amount}/order{orderId}")
-    public ResponseEntity<String> postMethodName(@PathVariable Long amount,@PathVariable UUID orderId) {
+    @PostMapping("/payment/{amount}/order{orderId}/mode{paymentMode}")
+    public ResponseEntity<String> postMethodName(@PathVariable Long amount,@PathVariable UUID orderId,@PathVariable String paymentMode) {
 
         try {
-            paymentService.paymentTransaction(orderId, amount);
+            paymentService.paymentTransaction(orderId, amount,paymentMode);
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body("TimeOut");

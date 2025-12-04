@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 
 import com.backendordersystem.order_service.Entity.OutBoxEvent;
 import com.backendordersystem.order_service.Repository.OutBoxRepo;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;

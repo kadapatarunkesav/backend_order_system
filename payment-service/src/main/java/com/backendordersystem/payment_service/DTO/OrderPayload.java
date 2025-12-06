@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record OrderPayload(
     UUID orderId, 
-    UUID userId, 
+    String userId, 
     List<Item> items,
     Long totalAmount,
     String paymentMethod) {

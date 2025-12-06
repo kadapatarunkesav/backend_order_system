@@ -23,12 +23,12 @@ public class PaymentScheduler {
     private final OutBoxRepo outBoxRepo;
 
     @Scheduled(fixedDelay = 1000)
-    public void paymentProccessor() {
+    public void paymentProccessor() throws  Exception{
 
         List<Payment> pendingPayList = paymentRepo.findTop20ByStatusOrderByCreatedAtAsc("PENDING");
 
         for (Payment payee : pendingPayList) {
-            if (payee.getCreatedAt().plusSeconds(30).isBefore(Instant.now())) {
+            if (payee.getCreatedAt().plusSeconds(600).isBefore(Instant.now())) {
 
                 payee.setStatus("FAILED");
                 payee.setUpdatedAt(Instant.now());

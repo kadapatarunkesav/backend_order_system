@@ -44,7 +44,7 @@ public class OrderServices {
 
                 Order newOrder = new Order();
                 newOrder.setOrderId(UUID.randomUUID());
-                newOrder.setUserId(UUID.randomUUID());
+                newOrder.setUserId("tarunkesavk@gmail.com");
                 newOrder.setStatus("CREATED");
                 newOrder.setTotalAmount(totalAmount);
                 newOrder.setCreatedAt(Instant.now());
@@ -116,7 +116,7 @@ public class OrderServices {
                 return itemResponses;
         }
 
-        public Page<OrderPageableResponse> getOrdersByUser(UUID userId, int page, int size) {
+        public Page<OrderPageableResponse> getOrdersByUser(String userId, int page, int size) {
                 Pageable pageable = PageRequest.of(page, size, by("createdAt").descending());
 
                 Page<Order> orders = orderRepo.findByUserId(userId, pageable);

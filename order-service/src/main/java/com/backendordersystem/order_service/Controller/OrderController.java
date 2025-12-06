@@ -59,7 +59,7 @@ public class OrderController {
     public ResponseEntity<Page<OrderPageableResponse>> getMyOrders(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @PathVariable UUID userId) {
+            @PathVariable String userId) {
         Page<OrderPageableResponse> response = orderServices.getOrdersByUser(userId, page, size);
         return ResponseEntity.ok(response);
     }

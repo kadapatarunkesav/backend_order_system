@@ -10,5 +10,5 @@ import com.backendordersystem.order_service.Entity.Order;
 
 public interface OrderRepo extends JpaRepository<Order, UUID> {
 
-    Page<Order> findByUserId(UUID userId, Pageable pageable); }
+    Page<Order> findByUserId(String userId, Pageable pageable); }
 

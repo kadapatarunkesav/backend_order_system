@@ -1,5 +1,6 @@
 package com.backendordersystem.payment_service.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -22,30 +23,28 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final OutBoxRepo outBoxRepo;
 
-
     @Transactional
     public void processPayment(OutboxEvent event) throws Exception{
         OrderPayload orderPayload = objectMapper.readValue(event.getPayload(), OrderPayload.class);
         Payment payment = new Payment();
         payment.setAmount(orderPayload.totalAmount());
+        payment.setUserId(orderPayload.userId());
         payment.setOrderId(orderPayload.orderId());
         payment.setStatus("PENDING");
 
         paymentRepo.save(payment);
     }
 
-
-    public void outBoxFailedPayment(Payment payment) {
+    public void outBoxFailedPayment(Payment payment) throws Exception{
         OutboxEvent  outboxEvent = new OutboxEvent();
         outboxEvent.setAggregateId(payment.getOrderId());
-        outboxEvent.setPayload("""
-                               {
-                               }""");
+        outboxEvent.setPayload(
+                new ObjectMapper().writeValueAsString(
+                        Map.of("userId", payment.getUserId())));
         outboxEvent.setType("PAYMENT_FAILED");
         outboxEvent.setAggregateType("NONE");
 
         payment.setStatus("FAILED");
-        
         outBoxRepo.save(outboxEvent);
     }    
 
@@ -55,14 +54,13 @@ public class PaymentService {
             payment.setStatus("CONFIRMED");
         OutboxEvent  outboxEvent = new OutboxEvent();
         outboxEvent.setAggregateId(orderId);
-        outboxEvent.setPayload("""
-                               {
-                               }""");
+        outboxEvent.setPayload(
+                new ObjectMapper().writeValueAsString(
+                        Map.of("userId", payment.getUserId())));
         outboxEvent.setType("PAYMENT_SUCCESS");
         outboxEvent.setAggregateType(paymentMode);
 
         payment.setStatus("SUCCESS");
-        
         outBoxRepo.save(outboxEvent);
         paymentRepo.save(payment);
     }

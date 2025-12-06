@@ -20,7 +20,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @PostMapping("/payment/{amount}/order{orderId}/mode{paymentMode}")
+    @PostMapping("/payment/{amount}/order/{orderId}/mode/{paymentMode}")
     public ResponseEntity<String> postMethodName(@PathVariable Long amount,@PathVariable UUID orderId,@PathVariable String paymentMode) {
 
         try {
@@ -32,5 +32,4 @@ public class PaymentController {
 
         return ResponseEntity.status(HttpStatus.OK).body("Successful Transaction");
     }
-    
 }

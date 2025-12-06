@@ -52,7 +52,7 @@ public class OutBoxPublisher {
         for (OutboxEvent event : outBoxEvents) {
             String json = objectMapper.writeValueAsString(event);
 
-            kafkaTemplate.send("paymnet.success", event.getAggregateId().toString(), json)
+            kafkaTemplate.send("payment.success", event.getAggregateId().toString(), json)
                     .whenComplete((result, ex) -> {
                         if (ex == null) {
                             event.setPublished(true);

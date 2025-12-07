@@ -50,7 +50,7 @@ public class PaymentService {
 
     public void paymentTransaction(UUID orderId , Long amount,String paymentMode) throws Exception{
         Payment payment = paymentRepo.findByOrderId(orderId).orElseThrow();
-        if(amount.equals(payment.getAmount()) && payment.getStatus().equals("PENDING"))
+        if(amount.equals(payment.getAmount()) && payment.getStatus().equals("PENDING")&& orderId.equals(payment.getOrderId())){
             payment.setStatus("CONFIRMED");
         OutboxEvent  outboxEvent = new OutboxEvent();
         outboxEvent.setAggregateId(orderId);
@@ -63,5 +63,6 @@ public class PaymentService {
         payment.setStatus("SUCCESS");
         outBoxRepo.save(outboxEvent);
         paymentRepo.save(payment);
+    }
     }
 }

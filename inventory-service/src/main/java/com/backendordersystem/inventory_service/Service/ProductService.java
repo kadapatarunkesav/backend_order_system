@@ -48,5 +48,5 @@ public class ProductService {
             return newProduct;
         }).toList();   
 
-        return productsList;1
+        return productsList;
 }

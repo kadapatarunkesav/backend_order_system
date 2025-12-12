@@ -6,6 +6,6 @@ import com.backendordersystem.inventory_service.Entity.Stock;
 
 public interface StockRepo extends JpaRepository<Stock, String>{
 
-    Integer findQuantityAvailableById(String sku);
+    Integer findQuantityAvailableBySku(String sku);
 
 }

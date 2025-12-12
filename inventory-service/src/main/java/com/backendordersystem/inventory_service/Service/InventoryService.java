@@ -1,8 +1,6 @@
 package com.backendordersystem.inventory_service.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -23,7 +21,7 @@ public class InventoryService {
     public String productInquriy(List<ItemDto> items) throws Exception {
 
         List<ItemDto> responseList = items.stream().filter(item -> {
-            Integer quantity = stockRepo.findQuantityAvailableById(item.sku());
+            Integer quantity = stockRepo.findQuantityAvailableBySku(item.sku());
             return quantity != null && quantity > item.qty();
         })
                 .map(item -> new ItemDto(item.sku(), item.qty()))
@@ -38,7 +36,7 @@ public class InventoryService {
     }
 
     private void productReservation(List<ItemDto> items) {
-
+        
     }
 
 }

@@ -1,6 +1,6 @@
 package com.backendordersystem.inventory_service.DTO;
 
-public record ItemDto(
+public record ItemStockDto(
     String sku,
     Integer qty
 ) {}

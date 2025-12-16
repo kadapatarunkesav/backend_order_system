@@ -1,6 +1,7 @@
 package com.backendordersystem.order_service.ServiceLayer;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import static org.springframework.data.domain.Sort.by;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.backendordersystem.order_service.DTO.ItemStockDto;
 import com.backendordersystem.order_service.DTO.OrderItemResponse;
 import com.backendordersystem.order_service.DTO.OrderPageableResponse;
 import com.backendordersystem.order_service.DTO.OrderRequest;
@@ -19,6 +21,7 @@ import com.backendordersystem.order_service.DTO.OrderResponse;
 import com.backendordersystem.order_service.Entity.Order;
 import com.backendordersystem.order_service.Entity.OrderItem;
 import com.backendordersystem.order_service.Entity.OutBoxEvent;
+import com.backendordersystem.order_service.Kafka.OutboxPublisherScheduler;
 import com.backendordersystem.order_service.Repository.OrderRepo;
 import com.backendordersystem.order_service.Repository.OutBoxRepo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,9 +36,12 @@ public class OrderServices {
         private final OrderRepo orderRepo;
         private final ObjectMapper objectMapper;
         private final OutBoxRepo outBoxRepo;
+        private final OutboxPublisherScheduler outboxPublisherScheduler;
 
         @Transactional
-        public OrderResponse createOrder(OrderRequest orderRequest, String idempotencyKey) {
+        public String createOrder(OrderRequest orderRequest, String idempotencyKey) throws Exception{
+
+                String res="";
 
                 long totalAmount = orderRequest.items()
                                 .stream()
@@ -50,15 +56,22 @@ public class OrderServices {
                 newOrder.setCreatedAt(Instant.now());
                 newOrder.setUpdatedAt(Instant.now());
 
+                List <ItemStockDto> itemsStockList=new ArrayList<>();
+
                 List<OrderItem> orderItems = orderRequest.items().stream().map(i -> {
                         OrderItem item = new OrderItem();
                         item.setOrder(newOrder);
                         item.setSku(i.sku());
                         item.setQty(i.qty());
                         item.setPrice(i.price());
+                        itemsStockList.add(new ItemStockDto(i.sku(),i.qty()));
                         return item;
                 }).toList();
 
+
+                res=itemsAvailability(itemsStockList);
+
+                if(res.equals("allAvailable")){
                 newOrder.setItems(orderItems);
 
                 // serilization error caused due to direct mapping of get items
@@ -96,8 +109,10 @@ public class OrderServices {
                                 saved.getOrderId(),
                                 saved.getStatus(),
                                 saved.getTotalAmount());
-
-                return response;
+                
+                return response.toString();
+                }
+                return res;
         }
 
         public List<OrderItemResponse> getOrderDetailsById(UUID orderId, String idempotencyKey) {
@@ -173,6 +188,12 @@ public class OrderServices {
                 outBoxEvent.setType(type);
                 outBoxRepo.save(outBoxEvent);
                 
+        }
+
+
+        public String itemsAvailability(List<ItemStockDto> itemStockDtos) throws Exception{
+                outboxPublisherScheduler.kafkaItemsAvaiability(itemStockDtos);
+                return "allAvailable";
         }
 
 }

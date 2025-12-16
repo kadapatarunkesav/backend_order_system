@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.backendordersystem.order_service.DTO.ItemStockDto;
 import com.backendordersystem.order_service.Entity.OutBoxEvent;
 import com.backendordersystem.order_service.Repository.OutBoxRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,14 @@ public class OutboxPublisherScheduler {
                         }
                     });
         }
+    }
+
+    public void kafkaItemsAvaiability(List<ItemStockDto> stockDtos)throws Exception{
+
+        String json = objectMapper.writeValueAsString(stockDtos);
+
+        kafkaTemplate.send("inventory.inquriy","",json);
+
     }
 
 }

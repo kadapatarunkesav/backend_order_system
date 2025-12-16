@@ -5,10 +5,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.backendordersystem.inventory_service.DTO.ItemDto;
+import com.backendordersystem.inventory_service.DTO.ItemStockDto;
 import com.backendordersystem.inventory_service.Repository.StockRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -18,24 +19,26 @@ public class InventoryService {
     private final StockRepo stockRepo;
     private final ObjectMapper objectMapper;
 
-    public String productInquriy(List<ItemDto> items) throws Exception {
+    public String productInquriy(List<ItemStockDto> items) throws Exception {
 
-        List<ItemDto> responseList = items.stream().filter(item -> {
+        List<ItemStockDto> responseList = items.stream().filter(item -> {
             Integer quantity = stockRepo.findQuantityAvailableBySku(item.sku());
-            return quantity != null && quantity > item.qty();
+            return quantity == null && quantity < item.qty();
         })
-                .map(item -> new ItemDto(item.sku(), item.qty()))
+                .map(item -> new ItemStockDto(item.sku(), item.qty()))
                 .collect(Collectors.toList());
-        if (responseList.size() > 0) {
+        if (!responseList.isEmpty()) {
             String response = objectMapper.writeValueAsString(responseList);
             return response;
         } else {
             productReservation(items);
+            return "Successfully added";
         }
-        return "Successfully added";
     }
 
-    private void productReservation(List<ItemDto> items) {
+    @Transactional
+    private String  productReservation(List<ItemStockDto> items) {
+
         
     }
 

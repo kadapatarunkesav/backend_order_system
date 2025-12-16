@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.backendordersystem.order_service.DTO.OrderItemResponse;
 import com.backendordersystem.order_service.DTO.OrderPageableResponse;
 import com.backendordersystem.order_service.DTO.OrderRequest;
-import com.backendordersystem.order_service.DTO.OrderResponse;
 import com.backendordersystem.order_service.ServiceLayer.OrderServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -33,10 +32,10 @@ public class OrderController {
     private final OrderServices orderServices;
 
     @PostMapping("/createOrder")
-    public ResponseEntity<OrderResponse> postMethodName(@RequestBody OrderRequest orderRequest,
+    public ResponseEntity<String> postMethodName(@RequestBody OrderRequest orderRequest,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
 
-        OrderResponse response = orderServices.createOrder(orderRequest, idempotencyKey);
+        String response = orderServices.createOrder(orderRequest, idempotencyKey);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
 

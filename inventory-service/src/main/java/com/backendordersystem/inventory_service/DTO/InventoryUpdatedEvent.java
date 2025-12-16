@@ -4,7 +4,7 @@ import java.util.List;
 
 public record InventoryUpdatedEvent(
     String orderId,
-    List<ItemDto> items,
+    List<ItemStockDto> items,
     String status 
 ) {}
 
